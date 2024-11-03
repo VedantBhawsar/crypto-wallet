@@ -12,6 +12,10 @@ export default defineConfig(
       '@stylistic/arrow-parens': 'off',
       'tailwindcss/classnames-order': 'off',
       'import/no-anonymous-default-export': 'off',
+      '@eslint-react/no-nested-components': 'off',
+      'unused-imports/no-unused-vars': 'off',
+      'unicorn/explicit-length-check': 'off',
+      'unicorn/no-document-cookie': 'off',
     },
   },
   {
