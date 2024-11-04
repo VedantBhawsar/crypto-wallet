@@ -1,12 +1,12 @@
 'use client'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { Keypair } from '@solana/web3.js'
-import { generateMnemonic, mnemonicToSeed } from 'bip39-web-crypto'
+import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39-web-crypto'
 import bs58 from 'bs58'
 import { derivePath } from 'ed25519-hd-key'
 import { ethers } from 'ethers'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Copy, Download, Eye, EyeClosed, Plus, Save } from 'lucide-react'
+import { Copy, Download, Eye, EyeClosed, Plus, Save, Trash, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { FaEthereum } from 'react-icons/fa'
 import { SiSolana } from 'react-icons/si'
@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Label } from '@/components/ui/label'
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -75,10 +76,12 @@ interface Keys {
 
 export default function Home() {
   const [mnemonic, setMnemonic] = useState('')
+  const [inputString, setInputString] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [keys, setKeys] = useState<Keys[]>([])
   const [visiblePrivateKeys, setVisiblePrivateKeys] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState<string>('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (localStorage.getItem('mnemonic')) {
@@ -170,12 +173,24 @@ export default function Home() {
     toast.success('Wallet saved')
   }
 
+  async function connectWallet() {
+    const validate = await validateMnemonic(inputString)
+    if (validate) {
+      toast.success('Wallet connected')
+      setMnemonic(inputString)
+    } else {
+      setError('Invalid mnemonic')
+    }
+  }
+
   return (
     <div className="mt-10">
       <div className="mx-auto max-w-7xl">
         <motion.div variants={fadeIn} initial="initial" animate="animate" className="mb-8">
           <h1 className="text-4xl font-bold">Crypto Wallet</h1>
-          <p className="text-lg text-slate-700">A simple wallet for cryptocurrencies</p>
+          <p className="text-lg text-slate-700 dark:text-white/70">
+            A simple wallet for cryptocurrencies
+          </p>
         </motion.div>
         <AnimatePresence mode="wait">
           {!mnemonic ? (
@@ -209,11 +224,25 @@ export default function Home() {
                   <motion.div variants={fadeIn} className="space-y-4">
                     <h2 className="text-2xl font-bold">Ethereum Wallet</h2>
                     <div className="flex gap-4">
-                      <Input
-                        placeholder="Enter your secret phrase (or leave blank to generate)"
-                        className="flex-1"
-                      />
-                      <Button onClick={generateMnem}>Generate</Button>
+                      <div className="w-full">
+                        <Input
+                          placeholder="Enter your secret phrase (or leave blank to generate)"
+                          className="flex-1"
+                          value={inputString}
+                          onChange={(e) => {
+                            setError('')
+                            setInputString(e.target.value)
+                          }}
+                        />
+                        {error && <Label className="ml-1 text-red-500">{error}</Label>}
+                      </div>
+                      {inputString.length > 0 ? (
+                        <Button onClick={connectWallet} variant={'outline'}>
+                          Connect
+                        </Button>
+                      ) : (
+                        <Button onClick={generateMnem}>Generate</Button>
+                      )}
                     </div>
                   </motion.div>
                 </TabsContent>
@@ -246,7 +275,9 @@ export default function Home() {
                 className="rounded-lg border p-8 shadow-sm"
               >
                 <h2 className="text-xl font-bold mb-2">Your Secret Key</h2>
-                <p className="text-gray-600 mb-6">Save these words in a safe place.</p>
+                <p className="text-gray-600 dark:text-white/70 mb-6">
+                  Save these words in a safe place.
+                </p>
 
                 <motion.div
                   variants={staggerContainer}
@@ -284,7 +315,7 @@ export default function Home() {
                     variant="outline"
                     onClick={() => (activeTab === 'solana' ? handleSolWallet() : handleEthWallet())}
                   >
-                    <Plus /> Add Wallet
+                    <Plus /> Wallet
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -301,12 +332,16 @@ export default function Home() {
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>
+                          <X />
+                          Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={handleDelete}
-                          className="bg-red-500 hover:bg-red-600"
+                          className="bg-red-500 hover:bg-red-600 dark:text-gray-200"
                         >
-                          Delete All
+                          <Trash />
+                          Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -329,7 +364,8 @@ export default function Home() {
                       <p>No wallet added</p>
                       <Button
                         onClick={() =>
-                          activeTab === 'solana' ? handleSolWallet() : handleEthWallet()}
+                          activeTab === 'solana' ? handleSolWallet() : handleEthWallet()
+                        }
                         variant="outline"
                       >
                         Add Wallet
@@ -343,9 +379,9 @@ export default function Home() {
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        className="p-6 border rounded-lg shadow-sm"
+                        className="p-6 border rounded-lg shadow-sm "
                       >
-                        <div className="flex justify-between items-center mb-6">
+                        <div className="flex justify-between items-center mb-6 ">
                           <h3 className="text-xl font-semibold">Wallet {index + 1}</h3>
 
                           <AlertDialog>
@@ -363,11 +399,15 @@ export default function Home() {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>
+                                  <X />
+                                  Cancel
+                                </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleKeyDelete(key.privateKey)}
-                                  className="bg-red-500 hover:bg-red-600"
+                                  className="bg-red-500 hover:bg-red-600 dark:text-gray-200"
                                 >
+                                  <Trash />
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -376,7 +416,7 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-4">
-                          <div className="p-4 bg-gray-50 rounded-lg">
+                          <div className="p-4 bg-gray-50 dark:!bg-white/5 rounded-lg">
                             <div className="flex justify-between items-center mb-2">
                               <span className="font-semibold">Private Key</span>
                               <Button
@@ -408,7 +448,7 @@ export default function Home() {
                             </motion.div>
                           </div>
 
-                          <div className="p-4 bg-gray-50 rounded-lg">
+                          <div className="p-4 bg-gray-50 dark:!bg-white/5 rounded-lg">
                             <div className="flex justify-between items-center mb-2">
                               <span className="font-semibold">Public Key</span>
                               <Button
@@ -507,17 +547,17 @@ function MnemonicWordButton({
       initial="initial"
       whileHover="hover"
       onClick={onClick}
-      className="w-full p-3 rounded-lg text-lg relative overflow-hidden cursor-pointer active:bg-red-400"
+      className="w-full p-3 rounded-lg text-lg relative overflow-hidden cursor-pointer dark:!bg-white/10 dark:hover:!bg-white/15 border"
     >
       <motion.div
-        className="select-none size-full flex items-center justify-center"
+        className="select-none size-full flex items-center justify-center "
         variants={wordVariants}
       >
         {word}
       </motion.div>
 
       <motion.div
-        className="select-none absolute inset-0 flex items-center justify-center text-base font-medium"
+        className="select-none absolute inset-0 flex items-center  justify-center text-base font-medium"
         variants={copyTextVariants}
       >
         Click to copy
