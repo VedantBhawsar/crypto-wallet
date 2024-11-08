@@ -7,10 +7,6 @@ import React from 'react'
 import { FaEthereum } from 'react-icons/fa'
 import { SiSolana } from 'react-icons/si'
 
-interface WalletProps {
-  children?: React.ReactDOM
-}
-
 function getWallets() {
   const response = localStorage.getItem('keys')
   if (!response) return []
@@ -24,10 +20,8 @@ interface walletTypes {
   network: 'solana' | 'ethereum'
 }
 
-export default function WalletPage({}: WalletProps) {
+export default function WalletPage() {
   const wallets = getWallets()
-
-  console.log(wallets)
 
   return (
     <div className="">
@@ -38,7 +32,7 @@ export default function WalletPage({}: WalletProps) {
             wallets.map((wallet: walletTypes, index: string) => (
               <div
                 key={index}
-                className="flex flex-col gap-2 border-2  p-8 rounded-xl shadow-sm hover:bg-gray-100 transition-colors duration-300"
+                className="flex flex-col gap-2 border-2  p-8 rounded-xl shadow-sm hover:bg-gray-100 hover:dark:bg-gray-950 transition-colors duration-300"
               >
                 <div className="text-xl font-semibold capitalize flex items-center">
                   {wallet.network === 'solana' ? (
@@ -54,7 +48,7 @@ export default function WalletPage({}: WalletProps) {
                 {/* <p className="text-sm text-gray-700 dark:text-gray-200">{wallet.privateKey}</p> */}
                 <Link
                   href={`/wallet/${wallet.publicKey}?network=${wallet.network}`}
-                  className="mt-2 font-semibold text-gray-600 hover:text-black underline underline-offset-2 cursor-pointer"
+                  className="mt-2 font-semibold text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white underline underline-offset-2 cursor-pointer"
                 >
                   {wallet.publicKey}
                 </Link>

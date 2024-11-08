@@ -7,7 +7,7 @@ interface WalletContextType {
   setWallet: (wallet: string) => void
 }
 
-let WalletContext = React.createContext<WalletContextType>({
+const WalletContext = React.createContext<WalletContextType>({
   wallet: null,
   setWallet: () => {},
 })

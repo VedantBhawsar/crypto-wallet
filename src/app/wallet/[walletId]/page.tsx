@@ -19,6 +19,7 @@ import { useRouter } from 'next/router'
 import ethApis from '@/lib/ethApis'
 import { SiSolana } from 'react-icons/si'
 import { FaEthereum } from 'react-icons/fa'
+import { Copy } from 'lucide-react'
 
 export default function WalletPage() {
   const {
@@ -65,7 +66,7 @@ export default function WalletPage() {
             <span> Wallet</span>
           </div>
           <p className="text-lg mt-1">
-            Wallet Id: <span className="font-bold">${walletId}</span>
+            Wallet Id: <span className="font-bold  ">{walletId}</span>
           </p>
         </div>
         <div className="mt-5 grid grid-cols-4 gap-5">

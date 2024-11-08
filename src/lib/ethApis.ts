@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 class EthApis {
-  ethApi: string = 'https://eth-mainnet.g.alchemy.com/v2/SJqVZ2UR7aN6Egap0f-eIj4ME4iMe_k6'
+  ethApi = 'https://eth-mainnet.g.alchemy.com/v2/SJqVZ2UR7aN6Egap0f-eIj4ME4iMe_k6'
 
   getResponse = async (payload: any) => {
     try {
