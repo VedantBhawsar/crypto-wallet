@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
@@ -12,12 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '../ui/dropdown-menu'
-import { MoonIcon, SunIcon } from 'lucide-react'
+import { MoonIcon, SunIcon, Wallet } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import { useNavigation } from 'react-day-picker'
+import { useRouter } from 'next/navigation'
 
 export function Header() {
   const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter()
   const { setTheme, theme } = useTheme()
 
   const logoVariants = {
@@ -63,7 +65,7 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center px-14 lg:px-6">
         <div className="flex flex-row items-center">
           <motion.div variants={logoVariants} whileHover="hover" initial="initial">
-            <Link className="no-underline transition-colors" href="/">
+            <Link className="no-underline transition-colors" href="/wallet">
               <motion.span className="fill-">
                 <svg height={26} viewBox="0 0 75 65" className="fill-black dark:fill-white">
                   <title>Vercel Logo</title>
@@ -131,17 +133,14 @@ export function Header() {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="mt-3 min-w-52">
-              <DropdownMenuLabel>Solana</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuItem>Subscription</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Ethereum</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  router.push('/wallet')
+                }}
+              >
+                {' '}
+                <Wallet /> Wallet
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

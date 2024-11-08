@@ -24,9 +24,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body className={`${poppins.className} antialiased dark:!bg-black`}>
-        <ThemeProvider defaultTheme="system" attribute="class">
+        <ThemeProvider attribute="class" defaultTheme="system">
           <Toaster toastOptions={{ className: 'dark:!bg-black dark:!text-white' }} />
           <Layout>{children}</Layout>
         </ThemeProvider>

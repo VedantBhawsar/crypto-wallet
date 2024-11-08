@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
+import { useRouter } from 'next/navigation'
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -72,6 +73,7 @@ const walletCardAnimation = {
 interface Keys {
   privateKey: string
   publicKey: string
+  network: string
 }
 
 export default function Home() {
@@ -80,19 +82,24 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [keys, setKeys] = useState<Keys[]>([])
   const [visiblePrivateKeys, setVisiblePrivateKeys] = useState<string[]>([])
-  const [activeTab, setActiveTab] = useState<string>('')
+  const [visibleMnemonic, setVisibleMnemonic] = useState<boolean>(false)
+  const [network, setNetwork] = useState<string>('')
   const [error, setError] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
     if (localStorage.getItem('mnemonic')) {
       setMnemonic(localStorage.getItem('mnemonic') as string)
       setKeys(JSON.parse(localStorage.getItem('keys') as string))
+      setNetwork(localStorage.getItem('network') as string)
+      setCurrentIndex(Number(localStorage.getItem('activeTab')))
     }
   }, [])
 
   async function generateMnem() {
     toast.success('Mnemonic generated')
     const code = await generateMnemonic()
+    localStorage.setItem('mnemonic', code)
     setMnemonic(code)
   }
 
@@ -125,6 +132,7 @@ export default function Home() {
         {
           privateKey: bs58.encode(secret),
           publicKey: keypair.publicKey.toBase58(),
+          network: network,
         },
       ]
     })
@@ -143,6 +151,7 @@ export default function Home() {
       {
         privateKey,
         publicKey: wallet.address,
+        network: network,
       },
     ])
   }
@@ -167,16 +176,25 @@ export default function Home() {
     setCurrentIndex((prev) => prev - 1)
   }
 
-  function handleSave() {
+  function savedToLocalStorage() {
     localStorage.setItem('mnemonic', mnemonic)
     localStorage.setItem('keys', JSON.stringify(keys))
-    toast.success('Wallet saved')
+    localStorage.setItem('network', network)
+    localStorage.setItem('currentIndex', currentIndex.toString())
   }
+
+  function handleSave() {
+    savedToLocalStorage()
+    toast.success('Wallet saved')
+    router.push('/wallet')
+  }
+
+  useEffect(savedToLocalStorage, [mnemonic, keys, currentIndex, network])
 
   async function connectWallet() {
     const validate = await validateMnemonic(inputString)
     if (validate) {
-      toast.success('Wallet connected')
+      toast.success('Wallet imported')
       setMnemonic(inputString)
     } else {
       setError('Invalid mnemonic')
@@ -203,10 +221,10 @@ export default function Home() {
               className="mt-7"
             >
               <Tabs
-                defaultValue={activeTab}
+                defaultValue={network}
                 className="w-full"
                 onValueChange={(e) => {
-                  setActiveTab(e)
+                  setNetwork(e)
                 }}
               >
                 <TabsList className="mb-4">
@@ -274,35 +292,52 @@ export default function Home() {
                 variants={walletCardAnimation}
                 className="rounded-lg border p-8 shadow-sm"
               >
-                <h2 className="text-xl font-bold mb-2">Your Secret Key</h2>
-                <p className="text-gray-600 dark:text-white/70 mb-6">
-                  Save these words in a safe place.
-                </p>
-
-                <motion.div
-                  variants={staggerContainer}
-                  initial="initial"
-                  animate="animate"
-                  className="grid grid-cols-3 gap-3 mb-6"
-                >
-                  {mnemonic.split(' ').map((word, index) => (
-                    <MnemonicWordButton
-                      key={index}
-                      word={word}
-                      index={index}
-                      onClick={() => handleCopy(word)}
-                    />
-                  ))}
-                </motion.div>
-
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={creatFile}>
-                    <Download /> Download
-                  </Button>
-                  <Button onClick={() => handleCopy(mnemonic)}>
-                    <Copy /> Copy All
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">Your Secret Key</h2>
+                    <p className="text-gray-600 dark:text-white/70 mb-6">
+                      Save these words in a safe place.
+                    </p>
+                  </div>
+                  <Button
+                    variant={'outline'}
+                    size={'icon'}
+                    onClick={() => {
+                      setVisibleMnemonic((prev) => !prev)
+                    }}
+                  >
+                    {visibleMnemonic ? <EyeClosed /> : <Eye />}
                   </Button>
                 </div>
+
+                {visibleMnemonic && (
+                  <div>
+                    <motion.div
+                      variants={staggerContainer}
+                      initial="initial"
+                      whileInView="animate"
+                      className="grid grid-cols-3 gap-3 mb-6"
+                    >
+                      {mnemonic.split(' ').map((word, index) => (
+                        <MnemonicWordButton
+                          key={index}
+                          word={word}
+                          index={index}
+                          onClick={() => handleCopy(word)}
+                        />
+                      ))}
+                    </motion.div>
+
+                    <div className="flex justify-end gap-3">
+                      <Button variant="outline" onClick={creatFile}>
+                        <Download /> Download
+                      </Button>
+                      <Button onClick={() => handleCopy(mnemonic)}>
+                        <Copy /> Copy All
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
 
               <motion.div
@@ -313,7 +348,7 @@ export default function Home() {
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    onClick={() => (activeTab === 'solana' ? handleSolWallet() : handleEthWallet())}
+                    onClick={() => (network === 'solana' ? handleSolWallet() : handleEthWallet())}
                   >
                     <Plus /> Wallet
                   </Button>
@@ -356,7 +391,7 @@ export default function Home() {
                 className="space-y-4"
               >
                 <AnimatePresence>
-                  {keys.length === 0 ? (
+                  {keys?.length === 0 ? (
                     <motion.div
                       className="h-40 w-full flex justify-center items-center border shadow-sm rounded-lg flex-col gap-3"
                       variants={fadeIn}
@@ -364,7 +399,7 @@ export default function Home() {
                       <p>No wallet added</p>
                       <Button
                         onClick={() =>
-                          activeTab === 'solana' ? handleSolWallet() : handleEthWallet()
+                          network === 'solana' ? handleSolWallet() : handleEthWallet()
                         }
                         variant="outline"
                       >
@@ -374,7 +409,7 @@ export default function Home() {
                   ) : (
                     keys.map((key, index) => (
                       <motion.div
-                        key={key.publicKey}
+                        key={index}
                         variants={walletCardAnimation}
                         initial="initial"
                         animate="animate"
@@ -382,7 +417,10 @@ export default function Home() {
                         className="p-6 border rounded-lg shadow-sm "
                       >
                         <div className="flex justify-between items-center mb-6 ">
-                          <h3 className="text-xl font-semibold">Wallet {index + 1}</h3>
+                          <span className="text-xl font-semibold flex items-center gap-2">
+                            {network === 'solana' ? <SiSolana /> : <FaEthereum />} Wallet{' '}
+                            {index + 1}
+                          </span>
 
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -470,7 +508,7 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-        {keys.length > 0 && (
+        {keys?.length > 0 && (
           <>
             <Separator className="my-5" />
             <motion.div variants={fadeIn} className="flex justify-end gap-3">
