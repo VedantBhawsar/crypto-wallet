@@ -109,3 +109,8 @@ a {
     @apply bg-background text-foreground;
   }
 }
+
+body {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}

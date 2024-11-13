@@ -56,7 +56,7 @@ export function Header() {
   }
 
   return (
-    <motion.nav
+    <motion.div
       variants={navVariants}
       initial="initial"
       animate="animate"
@@ -99,14 +99,13 @@ export function Header() {
               className="font-medium"
               style={{ letterSpacing: '.01px' }}
             >
-              <a
-                className="text-sm font-semibold no-underline transition-colors hover:text-blue-500"
-                target="_blank"
+              <Link
+                className="text-sm font-semibold no-underline transition-colors"
                 rel="noreferrer"
-                href="https://github.com/chhpt/nextjs-starter"
+                href="/"
               >
                 Crypto wallet
-              </a>
+              </Link>
             </motion.li>
           </ul>
         </div>
@@ -145,6 +144,6 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
-    </motion.nav>
+    </motion.div>
   )
 }

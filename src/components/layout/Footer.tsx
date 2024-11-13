@@ -50,7 +50,7 @@ export function Footer() {
               whileHover="hover"
               className="text-black dark:text-white/70 cursor-pointer"
             >
-              © 2023 Crypto wallet
+              © 2024 Crypto wallet
             </motion.span>
             <motion.span
               variants={textVariants}
@@ -85,14 +85,21 @@ export function Footer() {
 
           <div className="flex gap-3">
             <motion.div variants={iconVariants} whileHover="hover">
-              <Link href="/" className="text-black hover:text-gray-600 dark:text-white/70">
+              <Link
+                href="https://github.com/VedantBhawsar/crypto-wallet"
+                className="text-black hover:text-gray-600 dark:hover:text-white dark:text-white/70"
+              >
                 <Github size={24} />
               </Link>
             </motion.div>
 
             <motion.div variants={iconVariants} whileHover="hover">
-              <Link href="/" className="text-black hover:text-blue-400 dark:text-white/70">
-                <Twitter size={24} />
+              <Link
+                href="https://x.com/VedantBhavsar8"
+                target="_blank"
+                className="text-black hover:text-blue-400 dark:text-white/70 dark:hover:text-blue-400"
+              >
+                <Twitter size={24} className="text-inherit" />
               </Link>
             </motion.div>
           </div>
